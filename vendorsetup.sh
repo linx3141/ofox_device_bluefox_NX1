@@ -1,0 +1,44 @@
+#
+# Copyright (C) 2026 The OrangeFox Recovery Project
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+FDEVICE="NX1"
+
+fox_get_target_device() {
+local chkdev=$(echo "$BASH_SOURCE" | grep -w $FDEVICE)
+   if [ -n "$chkdev" ]; then
+      FOX_BUILD_DEVICE="$FDEVICE"
+   else
+      chkdev=$(set | grep BASH_ARGV | grep -w $FDEVICE)
+      [ -n "$chkdev" ] && FOX_BUILD_DEVICE="$FDEVICE"
+   fi
+}
+
+if [ -z "$1" -a -z "$FOX_BUILD_DEVICE" ]; then
+   fox_get_target_device
+fi
+
+if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
+    export LC_ALL="C"
+    export FOX_AB_DEVICE=1
+    export FOX_VIRTUAL_AB_DEVICE=1
+    export FOX_USE_TAR_BINARY=1
+    export FOX_USE_SED_BINARY=1
+    export FOX_USE_LZ4_BINARY=1
+    export FOX_USE_ZSTD_BINARY=1
+    export FOX_USE_DATE_BINARY=1
+    export FOX_DELETE_AROMAFM=1
+    export FOX_VANILLA_BUILD=1
+    export FOX_USE_GREP_BINARY=1
+    export FOX_USE_BUSYBOX_BINARY=1
+    export FOX_USE_XZ_UTILS=1
+    export FOX_ALLOW_EARLY_SETTINGS_LOAD=1
+    export FOX_USE_UPDATED_MAGISKBOOT=1
+    export FOX_USE_FSCK_EROFS_BINARY=1
+    export FOX_USE_PATCHELF_BINARY=1
+    export FOX_SETTINGS_ROOT_DIRECTORY=/data/recovery
+    export FOX_MISCELLANEOUS_ROOT_DIRECTORY=/sdcard
+    export FOX_BUILD_TYPE=Unofficial
+    export FOX_MAINTAINER_PATCH_VERSION=1
+fi

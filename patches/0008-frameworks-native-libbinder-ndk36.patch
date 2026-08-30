@@ -1,0 +1,35 @@
+diff --git a/libs/binder/ndk/ibinder.cpp b/libs/binder/ndk/ibinder.cpp
+index bf7a0ba..9ea1efd 100644
+--- a/libs/binder/ndk/ibinder.cpp
++++ b/libs/binder/ndk/ibinder.cpp
+@@ -376,6 +376,17 @@ void AIBinder_Class_setOnDump(AIBinder_Class* clazz, AIBinder_onDump onDump) {
+     clazz->onDump = onDump;
+ }
+ 
++extern "C" void AIBinder_Class_setTransactionCodeToFunctionNameMap(
++        AIBinder_Class* clazz, const char* const* /*transactionCodeToFunctionMap*/,
++        size_t /*length*/) {
++    LOG_ALWAYS_FATAL_IF(clazz == nullptr,
++                        "setTransactionCodeToFunctionNameMap requires non-null clazz");
++    // No-op on purpose: this recovery's libbinder_ndk predates the API-36
++    // transaction code map, and wiring it through would require a newer
++    // libbinder (BBinder::setTransactionCodeMap). Newer vendor HALs only call
++    // this for trace name decoration, so ignoring it is safe.
++}
++
+ void AIBinder_Class_disableInterfaceTokenHeader(AIBinder_Class* clazz) {
+     LOG_ALWAYS_FATAL_IF(clazz == nullptr, "disableInterfaceTokenHeader requires non-null clazz");
+ 
+diff --git a/libs/binder/ndk/libbinder_ndk.map.txt b/libs/binder/ndk/libbinder_ndk.map.txt
+index de624e4..961ea27 100644
+--- a/libs/binder/ndk/libbinder_ndk.map.txt
++++ b/libs/binder/ndk/libbinder_ndk.map.txt
+@@ -218,3 +218,8 @@ LIBBINDER_NDK_PLATFORM {
+   local:
+     *;
+ };
++
++LIBBINDER_NDK36 {
++  global:
++    AIBinder_Class_setTransactionCodeToFunctionNameMap;
++} LIBBINDER_NDK;

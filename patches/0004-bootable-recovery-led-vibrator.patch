@@ -1,0 +1,29 @@
+diff --git a/minuitwrp/events.cpp b/minuitwrp/events.cpp
+index e497df6..331e83e 100644
+--- a/minuitwrp/events.cpp
++++ b/minuitwrp/events.cpp
+@@ -181,6 +181,24 @@ int vibrate(int timeout_ms)
+     if (std::ifstream(VIBRATOR_TIMEOUT_FILE).good()) {
+         write_to_file(VIBRATOR_TIMEOUT_FILE, tout);
+     }
++#elif defined(TW_HAPTICS_LED_BRIGHTNESS)
++    /* Plain LED-class vibrator (e.g. MTK regulator-vibrator): pulse the
++     * brightness node on/off. ledtrig-transient is not usable here because
++     * activate() leaves brightness at max and the motor never stops. Use the
++     * full max_brightness value: low duty values are too weak to spin the
++     * motor. Duration is taken from the OrangeFox vibration settings. */
++    int led_max = 255;
++#ifdef TW_HAPTICS_LED_MAX_BRIGHTNESS
++    std::ifstream max_brt(TW_HAPTICS_LED_MAX_BRIGHTNESS);
++    if (max_brt.good()) {
++        max_brt >> led_max;
++    }
++#endif
++    char led_on[8];
++    snprintf(led_on, sizeof(led_on), "%d", led_max);
++    write_to_file(TW_HAPTICS_LED_BRIGHTNESS, led_on);
++    usleep(timeout_ms * 1000);
++    write_to_file(TW_HAPTICS_LED_BRIGHTNESS, "0");
+ #else
+     if (std::ifstream(LEDS_HAPTICS_ACTIVATE_FILE).good()) {
+         write_to_file(LEDS_HAPTICS_DURATION_FILE, tout);

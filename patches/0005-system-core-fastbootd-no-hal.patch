@@ -1,0 +1,20 @@
+diff --git a/fastboot/device/fastboot_device.cpp b/fastboot/device/fastboot_device.cpp
+index 0dc4e97..0510e46 100644
+--- a/fastboot/device/fastboot_device.cpp
++++ b/fastboot/device/fastboot_device.cpp
+@@ -111,8 +111,13 @@ FastbootDevice::FastbootDevice()
+               {FB_CMD_FETCH, FetchHandler},
+       }),
+       boot_control_hal_(BootControlClient::WaitForService()),
+-      health_hal_(get_health_service()),
+-      fastboot_hal_(get_fastboot_service()),
++      // Recovery has no health HAL service; the HIDL getService() below would
++      // block forever waiting for it and fastbootd would never bring up USB.
++      // All users of health_hal_ already handle a null pointer.
++      health_hal_(nullptr),
++      // Same for the fastboot HAL: recovery does not provide it, and the HIDL
++      // getService() would block forever. All users handle a null pointer.
++      fastboot_hal_(nullptr),
+       active_slot_("") {
+     if (android::base::GetProperty("fastbootd.protocol", "usb") == "tcp") {
+         transport_ = std::make_unique<ClientTcpTransport>();

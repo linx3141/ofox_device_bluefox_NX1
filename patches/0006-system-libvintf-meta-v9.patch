@@ -1,0 +1,13 @@
+diff --git a/include/vintf/constants.h b/include/vintf/constants.h
+index 423cea0..ac790f7 100644
+--- a/include/vintf/constants.h
++++ b/include/vintf/constants.h
+@@ -23,7 +23,7 @@ namespace android {
+ namespace vintf {
+ 
+ /* libvintf meta-version */
+-constexpr Version kMetaVersion{8, 0};
++constexpr Version kMetaVersion{9, 0};
+ 
+ // Some legacy metaversion constants
+ // The metaversion where inet transport is added to AIDL HALs

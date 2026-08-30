@@ -1,0 +1,31 @@
+diff --git a/cmds/servicemanager/Android.bp b/cmds/servicemanager/Android.bp
+index 3897197..89f48f4 100644
+--- a/cmds/servicemanager/Android.bp
++++ b/cmds/servicemanager/Android.bp
+@@ -67,6 +67,9 @@ cc_binary {
+     recovery: true,
+     defaults: ["servicemanager_defaults"],
+     init_rc: ["servicemanager.recovery.rc"],
++    cflags: [
++        "-DRECOVERY_SERVICEMANAGER_NO_VINTF=1",
++    ],
+     srcs: ["main.cpp"],
+ }
+ 
+diff --git a/cmds/servicemanager/ServiceManager.cpp b/cmds/servicemanager/ServiceManager.cpp
+index a828b52..603071c 100644
+--- a/cmds/servicemanager/ServiceManager.cpp
++++ b/cmds/servicemanager/ServiceManager.cpp
+@@ -291,6 +291,12 @@ static std::vector<std::string> getVintfInstances(const std::string& interface)
+ }
+ 
+ static bool meetsDeclarationRequirements(const sp<IBinder>& binder, const std::string& name) {
++#ifdef RECOVERY_SERVICEMANAGER_NO_VINTF
++    // Recovery's vendor manifest (from the mounted read-only vendor) does not
++    // declare every TrustKernel HAL instance (e.g. secureclock/sharedsecret),
++    // so skip the VINTF gate for the recovery servicemanager only.
++    return true;
++#endif
+     if (!Stability::requiresVintfDeclaration(binder)) {
+         return true;
+     }

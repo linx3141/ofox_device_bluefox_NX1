@@ -1,0 +1,4 @@
+# AOSP hal_bootctl_default already allows misc_block_device rw + block_device
+# dir search. This only adds the rootfs dir read that libfstab needs while
+# probing the misc partition in recovery.
+allow hal_bootctl_default rootfs:dir r_dir_perms;

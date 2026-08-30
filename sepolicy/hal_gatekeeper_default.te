@@ -1,0 +1,4 @@
+# See hal_keymint_default.te: recovery's rootfs is unlabeled, so the strict
+# gatekeeper domain policy would deny mapping the dynamic linker. Run
+# permissively in recovery.
+permissive hal_gatekeeper_default;

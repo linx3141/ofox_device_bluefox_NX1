@@ -1,0 +1,82 @@
+# Bluefox NX1 (MT6768) recovery init
+# Based on the stock recovery ramdisk; TrustKernel services added for FBE
+# decryption.
+
+on init
+    setprop sys.usb.configfs 1
+    setprop sys.usb.controller "musb-hdrc"
+    setprop sys.usb.ffs.aio_compat 0
+    # Recovery does not restorecon /vendor/bin/hw automatically; label the
+    # vendored HALs explicitly so init can exec them into their domains.
+    restorecon /vendor/bin/hw/android.hardware.boot-service.mediatek
+    restorecon /vendor/bin/hw/android.hardware.security.keymint@3.0-service.trustkernel
+    restorecon /vendor/bin/hw/android.hardware.gatekeeper-service.trustkernel
+    restorecon /vendor/bin/teed
+    restorecon -R /vendor/app/t6
+    restorecon /system/bin/keystore2
+    # servicemanager may not be started from /system/etc/init in recovery;
+    # register and start it explicitly.
+    start servicemanager
+
+on fs
+    # TrustKernel teed expects its protected-storage dirs under /mnt/vendor,
+    # which the recovery ramdisk does not mount by default.
+    mkdir /mnt/vendor/persist 0755 root root
+    mkdir /mnt/vendor/protect_f 0750 system system
+    mkdir /mnt/vendor/protect_s 0750 system system
+    # persist may already be mounted at /persist by the first-stage ramdisk;
+    # mounting the same block device at /mnt/vendor/persist as well is fine
+    # and is what stock init does for teed.
+    mount ext4 /dev/block/by-name/persist /mnt/vendor/persist
+    mount ext4 /dev/block/by-name/protect1 /mnt/vendor/protect_f
+    mount ext4 /dev/block/by-name/protect2 /mnt/vendor/protect_s
+    # Restore the TrustKernel protect-storage labels recursively. Without
+    # this, files (re)written by teed in recovery stay unlabeled and the
+    # system-side tee domain (enforcing) cannot read them, breaking
+    # gatekeeper PIN verification after a recovery decrypt.
+    restorecon -R /mnt/vendor/persist/t6
+    restorecon -R /mnt/vendor/protect_f/tee
+
+on fs && property:ro.debuggable=0
+    # distinguish USB shoulde connect or not, i.e. CDP vs SDP
+    write /sys/class/udc/musb-hdrc/device/cmode 2
+    # set charging free due to it wait for USB activation
+    start adbd
+
+on post-fs
+    # Support A/B feature for EMMC and UFS boot region
+    symlink /dev/block/sda /dev/block/mmcblk0boot0
+    symlink /dev/block/sdb /dev/block/mmcblk0boot1
+    symlink /dev/block/mmcblk0boot0 /dev/block/platform/bootdevice/by-name/preloader_a
+    symlink /dev/block/mmcblk0boot1 /dev/block/platform/bootdevice/by-name/preloader_b
+    symlink /dev/block/mmcblk0boot0 /dev/block/by-name/preloader_a
+    symlink /dev/block/mmcblk0boot1 /dev/block/by-name/preloader_b
+    mkdir /data/vendor 0771 system system
+    mkdir /data/vendor/t6 0771 system system
+    mkdir /data/vendor/t6/fs 0771 system system
+    mkdir /data/vendor/t6/app 0771 system system
+    # Re-apply the TrustKernel protect-storage labels after teed may have
+    # rewritten files during its startup (the on-fs pass runs too early).
+    restorecon -R /mnt/vendor/persist/t6
+    restorecon -R /mnt/vendor/protect_f/tee
+
+# keystore2 must be available to TWRP's FBE decryption path. Define it here
+# (this file is imported directly by /system/etc/init/hw/init.rc); the
+# /system and /vendor init-dir copies are intentionally not shipped to avoid
+# parse-order/duplicate ambiguity in recovery.
+service keystore2 /system/bin/keystore2 /data/misc/keystore
+    class hal
+    user keystore
+    group keystore readproc log
+    task_profiles ProcessCapacityHigh
+    rlimit memlock unlimited unlimited
+
+# recovery servicemanager (built with -DRECOVERY_SERVICEMANAGER_NO_VINTF=1 so
+# the TrustKernel keymint process can register its secureclock/sharedsecret
+# instances while keeping all normal servicemanager APIs). Runs in the
+# permissive recovery domain.
+service servicemanager /system/bin/servicemanager
+    user root
+    group root readproc
+    disabled
+    seclabel u:r:recovery:s0

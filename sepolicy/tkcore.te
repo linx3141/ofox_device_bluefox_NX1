@@ -1,0 +1,2 @@
+type tkcore_systa_file, file_type, mlstrustedobject;
+type tkcore_protect_data_file, file_type, mlstrustedobject;

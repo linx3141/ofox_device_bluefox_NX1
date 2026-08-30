@@ -1,0 +1,5 @@
+<!--
+    Base vendor manifest; HAL fragments live in ./manifest/
+-->
+<manifest version="8.0" type="device">
+</manifest>

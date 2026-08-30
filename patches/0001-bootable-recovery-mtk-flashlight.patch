@@ -1,0 +1,25 @@
+diff --git a/gui/action.cpp b/gui/action.cpp
+index 293dd16..942f3c5 100755
+--- a/gui/action.cpp
++++ b/gui/action.cpp
+@@ -2601,6 +2601,20 @@ int GUIAction::flashlightImpl(std::string arg __unused)
+ 		}
+ 		
+ 		if (!path_one.empty()) {
++			// MTK flashlight_core (Helio G81 etc.): no LED brightness node.
++			// Torch is toggled through the "flashlight_torch" file with
++			// "[TYPE] [CT] [PART] [TORCH_STATUS]" rows (0 0 0 1 = on).
++			if (TWFunc::Path_Exists(path_one + "/flashlight_torch")) {
++				if (fl_used == "0") {
++					TWFunc::write_to_file(path_one + "/flashlight_torch", "0 0 0 1");
++					DataManager::SetValue("of_flash_on", "1");
++				} else {
++					TWFunc::write_to_file(path_one + "/flashlight_torch", "0 0 0 0");
++					DataManager::SetValue("of_flash_on", "0");
++				}
++				return 0;
++			}
++
+ 			bright_one = path_one + "/brightness";
+ 			max_one = path_one + "/max_brightness";
+ 			if (TWFunc::Path_Exists(max_one)) {

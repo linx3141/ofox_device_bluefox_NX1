@@ -1,0 +1,27 @@
+diff --git a/gui/gesture.cpp b/gui/gesture.cpp
+index b2a2f39..e2eb63d 100755
+--- a/gui/gesture.cpp
++++ b/gui/gesture.cpp
+@@ -43,6 +43,8 @@ extern "C" {
+ #include "rapidxml.hpp"
+ #include "objects.hpp"
+ 
++extern "C" int scale_theme_y(int initial_y);
++
+ GUIGesture::GUIGesture(xml_node<>* node)
+ 	: GUIObject(node)
+ {
+@@ -118,7 +120,12 @@ int GUIGesture::NotifyTouch(TOUCH_STATE state, int x, int y)
+ {
+ 	if (!isConditionTrue())	 return -1;
+ 
+-	int center = DataManager::GetIntValue("center_y");
++	// center_y is stored in design-resolution pixels (OF_SCREEN_H/2), while
++	// mRenderY/mSensetivity and the touch coordinates are in the scaled theme
++	// space. Mixing the two made the swipe-up condition unsatisfiable on
++	// devices with a non-1.0 theme scale (e.g. this 1080x2336 panel), so the
++	// lock screen could never be unlocked by swiping.
++	int center = scale_theme_y(DataManager::GetIntValue("center_y"));
+ 
+ 	if (state == TOUCH_START)
+ 		vibrateLock = false; //Execute gesture action only one time

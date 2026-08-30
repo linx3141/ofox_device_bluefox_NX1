@@ -1,0 +1,25 @@
+diff --git a/partitionmanager.cpp b/partitionmanager.cpp
+index 18d0e29..05ed0c5 100755
+--- a/partitionmanager.cpp
++++ b/partitionmanager.cpp
+@@ -3135,6 +3135,20 @@ bool TWPartitionManager::Enable_MTP(void) {
+ 		mtp_write_fd = mtppipe[1];
+ 		DataManager::SetValue("tw_mtp_enabled", 1);
+ 		Add_All_MTP_Storage();
++		// NX1 musb: the first bind after "none" always fails with -19
++		// (ENODEV); a retry a moment later succeeds. Wait for the MTP server
++		// to signal ffs readiness, then bind the UDC with retries.
++		char mtp_ready[PROPERTY_VALUE_MAX] = "";
++		for (int i = 0; i < 20 && mtp_ready[0] != '1'; i++) {
++			property_get("sys.usb.ffs.mtp.ready", mtp_ready, "");
++			if (mtp_ready[0] != '1')
++				usleep(500000);
++		}
++		for (int i = 0; i < 8; i++) {
++			if (TWFunc::write_to_file("/config/usb_gadget/g1/UDC", "musb-hdrc"))
++				break;
++			usleep(2000000);
++		}
+ 		return true;
+ 	} else {
+ 		close(mtppipe[0]);

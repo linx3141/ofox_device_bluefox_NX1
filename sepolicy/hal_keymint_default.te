@@ -1,0 +1,5 @@
+# Recovery ships /system as an unlabeled rootfs (files stay u:object_r:rootfs:s0),
+# so the strict hal_keymint_default policy denies basic lib mapping. Allow the
+# TrustKernel keymint HAL to run permissively in recovery, like stock recovery
+# does for vendor HALs.
+permissive hal_keymint_default;

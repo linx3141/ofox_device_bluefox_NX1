@@ -1,0 +1,6 @@
+# TrustKernel teed service for FBE decryption. Recovery ships /system as an
+# unlabeled rootfs, so run it permissively like the other vendored HALs.
+type teed, domain;
+type teed_exec, exec_type, vendor_file_type, file_type;
+init_daemon_domain(teed);
+permissive teed;
