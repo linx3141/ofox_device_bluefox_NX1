@@ -1,0 +1,7 @@
+# Raw eMMC block device used by the MTK AIDL boot control HAL to update the
+# A/B slot metadata (boot_para). Same type/allow rules as the stock PixelOS
+# vendor policy: general rw plus the MMC_IOC_CMD ioctls (0x5388/0xb300).
+type bootdevice_block_device, dev_type;
+
+allow hal_bootctl_default bootdevice_block_device:blk_file rw_file_perms;
+allowxperm hal_bootctl_default bootdevice_block_device:blk_file ioctl { 0x5388 0xb300 };

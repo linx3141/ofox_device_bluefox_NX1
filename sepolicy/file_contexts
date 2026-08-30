@@ -2,6 +2,10 @@
 # HAL (hal_bootctl_default) is already allowed rw on misc_block_device.
 /dev/block/mmcblk0p1 u:object_r:misc_block_device:s0
 /dev/block/by-name/misc u:object_r:misc_block_device:s0
+# MTK boot control HAL reads/writes the raw eMMC (MMC_IOC_CMD ioctls) to
+# update the boot_para slot metadata. Label the raw disk like the stock
+# vendor does so hal_bootctl_default can open it and use the required ioctls.
+/dev/block/mmcblk0 u:object_r:bootdevice_block_device:s0
 /vendor/bin/hw/android.hardware.boot-service.mediatek u:object_r:hal_bootctl_default_exec:s0
 /vendor/bin/hw/android.hardware.security.keymint@3.0-service.trustkernel u:object_r:hal_keymint_default_exec:s0
 /vendor/bin/hw/android.hardware.gatekeeper-service.trustkernel u:object_r:hal_gatekeeper_default_exec:s0
