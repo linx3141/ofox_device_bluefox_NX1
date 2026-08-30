@@ -48,14 +48,6 @@ on property:sys.usb.config=none && property:sys.usb.configfs=1
     # (the first bind fails with -19 on NX1 musb; a retry succeeds).
     setprop sys.usb.state ${sys.usb.config}
 
-on property:sys.usb.config=sideload
-    # update_engine_sideload needs /metadata mounted to manage A/B snapshot
-    # state, and it refuses to clean up stale snapshots while /system_root or
-    # /postinstall is still mounted (leftover from a previous attempt).
-    umount /system_root
-    umount /postinstall
-    mount f2fs /dev/block/by-name/metadata /metadata noatime nosuid nodev discard wait
-
 on property:sys.usb.config=fastboot
     # Provide MTK's boot control HAL for fastbootd so slot info is available.
     start vendor.boot-mediatek
