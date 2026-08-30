@@ -15,6 +15,7 @@ $(shell \
     "bootable/recovery:0002-bootable-recovery-lockscreen-gesture-scale.patch" \
     "bootable/recovery:0004-bootable-recovery-led-vibrator.patch" \
     "bootable/recovery:0013-bootable-recovery-mtp-udc-retry.patch" \
+    "bootable/recovery:0014-bootable-recovery-libvintf-recovery.patch" \
     "system/core:0005-system-core-fastbootd-no-hal.patch" \
     "system/libvintf:0006-system-libvintf-meta-v9.patch" \
     "frameworks/native:0007-frameworks-native-servicemanager-vintf-skip.patch" \
