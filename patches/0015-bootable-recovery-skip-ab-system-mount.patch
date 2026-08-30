@@ -1,8 +1,8 @@
 diff --git a/twrpinstall/twinstall.cpp b/twrpinstall/twinstall.cpp
-index 3691a2f..5d00f07 100755
+index 3691a2f..0b0a6af 100755
 --- a/twrpinstall/twinstall.cpp
 +++ b/twrpinstall/twinstall.cpp
-@@ -434,13 +434,12 @@ int TWinstall_zip(const char *path, int *wipe_cache, bool check_for_digest)
+@@ -434,13 +434,15 @@ int TWinstall_zip(const char *path, int *wipe_cache, bool check_for_digest)
  		if (FindEntry(Zip, ab_binary_name, &ab_binary_entry) == 0) {
  			LOGINFO("AB zip\n");
  			gui_msg(Msg(msg::kHighlight, "flash_ab_inactive=Flashing A/B zip to inactive slot: {1}")(PartitionManager.Get_Active_Slot_Display()=="A"?"B":"A"));
@@ -19,10 +19,13 @@ index 3691a2f..5d00f07 100755
 +			// that is only needed for TWRP's backuptool.
 +			bool system_mount_state = false;
 +			bool vendor_mount_state = false;
++			// update_engine_sideload also needs /metadata to manage snapshot
++			// state; TWRP unmounts it after decryption, so mount it again.
++			PartitionManager.Mount_By_Path("/metadata", false);
  
  			run_rom_scripts = true;
  			usleep(32);
-@@ -455,12 +454,7 @@ int TWinstall_zip(const char *path, int *wipe_cache, bool check_for_digest)
+@@ -455,12 +457,7 @@ int TWinstall_zip(const char *path, int *wipe_cache, bool check_for_digest)
  
  			DataManager::SetValue(FOX_ZIP_INSTALLER_CODE, 1); // mark as custom ROM install
  
