@@ -5,3 +5,5 @@ type bootdevice_block_device, dev_type;
 
 allow hal_bootctl_default bootdevice_block_device:blk_file rw_file_perms;
 allowxperm hal_bootctl_default bootdevice_block_device:blk_file ioctl { 0x5388 0xb300 };
+# MMC_IOC_CMD on the raw eMMC requires CAP_SYS_RAWIO.
+allow hal_bootctl_default self:capability sys_rawio;
