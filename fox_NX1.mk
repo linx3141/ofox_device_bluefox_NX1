@@ -44,9 +44,5 @@ OF_USE_LEGACY_BATTERY_SERVICES := 1
 # MTK AIDL boot control HAL is vendored from the stock recovery ramdisk
 OF_USE_AIDL_BOOT_CONTROL := 1
 
-# Do not mount /system_root or /vendor before update_engine_sideload: on VAB
-# devices the mounted snapshot device makes cleanup fail with EBUSY.
-OF_SKIP_AB_SYSTEM_MOUNT := 1
-
 # TrustKernel provides AIDL keymint v3 in the stock ROM.
 OF_DEFAULT_KEYMASTER_VERSION := 3
