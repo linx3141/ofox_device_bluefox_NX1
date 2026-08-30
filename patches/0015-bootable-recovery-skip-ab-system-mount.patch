@@ -1,0 +1,59 @@
+diff --git a/orangefox.mk b/orangefox.mk
+index 85f0278..bad6adc 100644
+--- a/orangefox.mk
++++ b/orangefox.mk
+@@ -156,6 +156,10 @@ ifeq ($(AB_OTA_UPDATER),true)
+     FOX_AB_DEVICE := 1
+ endif
+ 
++ifeq ($(OF_SKIP_AB_SYSTEM_MOUNT),1)
++    LOCAL_CFLAGS += -DOF_SKIP_AB_SYSTEM_MOUNT='"1"'
++endif
++
+ ifeq ($(OF_AB_DEVICE_WITH_RECOVERY_PARTITION),1)
+     FOX_AB_DEVICE := 1
+     LOCAL_CFLAGS += -DOF_AB_DEVICE_WITH_RECOVERY_PARTITION='"1"'
+diff --git a/twrpinstall/twinstall.cpp b/twrpinstall/twinstall.cpp
+index 3691a2f..468565c 100755
+--- a/twrpinstall/twinstall.cpp
++++ b/twrpinstall/twinstall.cpp
+@@ -434,6 +434,14 @@ int TWinstall_zip(const char *path, int *wipe_cache, bool check_for_digest)
+ 		if (FindEntry(Zip, ab_binary_name, &ab_binary_entry) == 0) {
+ 			LOGINFO("AB zip\n");
+ 			gui_msg(Msg(msg::kHighlight, "flash_ab_inactive=Flashing A/B zip to inactive slot: {1}")(PartitionManager.Get_Active_Slot_Display()=="A"?"B":"A"));
++#ifdef OF_SKIP_AB_SYSTEM_MOUNT
++			// update_engine_sideload manages its own snapshot mounts. Keeping
++			// /system_root (or /vendor) mounted on VAB devices makes snapshot
++			// cleanup fail with "Device or resource busy", so skip the mount
++			// that is only needed for TWRP's backuptool.
++			bool system_mount_state = false;
++			bool vendor_mount_state = false;
++#else
+ 			// We need this so backuptool can do its magic
+ 			bool system_mount_state = PartitionManager.Is_Mounted_By_Path(PartitionManager.Get_Android_Root_Path());
+ 			bool vendor_mount_state = PartitionManager.Is_Mounted_By_Path("/vendor");
+@@ -441,6 +449,7 @@ int TWinstall_zip(const char *path, int *wipe_cache, bool check_for_digest)
+ 			PartitionManager.Mount_By_Path("/vendor", false);
+ 			TWFunc::copy_file("/system/bin/sh", "/tmp/sh", 0755);
+ 			mount("/tmp/sh", "/system/bin/sh", "auto", MS_BIND, NULL);
++#endif
+ 
+ 			run_rom_scripts = true;
+ 			usleep(32);
+@@ -455,12 +464,16 @@ int TWinstall_zip(const char *path, int *wipe_cache, bool check_for_digest)
+ 
+ 			DataManager::SetValue(FOX_ZIP_INSTALLER_CODE, 1); // mark as custom ROM install
+ 
++#ifdef OF_SKIP_AB_SYSTEM_MOUNT
++			unlink("/tmp/sh");
++#else
+ 			umount("/system/bin/sh");
+ 			unlink("/tmp/sh");
+ 			if (!vendor_mount_state)
+ 				PartitionManager.UnMount_By_Path("/vendor", false);
+ 			if (!system_mount_state)
+ 				PartitionManager.UnMount_By_Path(PartitionManager.Get_Android_Root_Path(), false);
++#endif
+ 			if (android::base::GetBoolProperty("ro.virtual_ab.enabled", false)) {
+ 				PartitionManager.Unlock_Block_Partitions();
+ 				PartitionManager.Prepare_All_Super_Volumes();
