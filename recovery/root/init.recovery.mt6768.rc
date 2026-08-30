@@ -17,6 +17,10 @@ on init
     # servicemanager may not be started from /system/etc/init in recovery;
     # register and start it explicitly.
     start servicemanager
+    # Start the MTK AIDL boot control HAL early so A/B operations (sideload,
+    # slot switching, fastbootd) can find it. The fastboot-only trigger in
+    # init.recovery.usb.rc is kept as a harmless no-op fallback.
+    start vendor.boot-mediatek
 
 on fs
     # TrustKernel teed expects its protected-storage dirs under /mnt/vendor,

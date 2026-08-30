@@ -1,0 +1,12 @@
+<!--
+    Recovery libvintf (VintfObjectRecovery) only reads /system/etc/vintf,
+    so the MTK AIDL boot HAL must be declared here as well as in the vendor
+    manifest. Without this, update_engine_sideload treats IBootControl as
+    undeclared and falls back to HIDL, which is unavailable in recovery.
+-->
+<manifest version="1.0" type="framework">
+    <hal format="aidl">
+        <name>android.hardware.boot</name>
+        <fqname>IBootControl/default</fqname>
+    </hal>
+</manifest>
